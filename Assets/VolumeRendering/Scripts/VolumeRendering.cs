@@ -7,6 +7,9 @@ using System.Runtime.InteropServices;
 
 using UnityEngine;
 using System.Diagnostics;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace VolumeRendering
 {
@@ -149,7 +152,20 @@ namespace VolumeRendering
             //filter = "no filter";
             isLogMemory = isLog;
 
-            LogPipeline();
+            string textureCacheName = string.Format("Assets/Cache/GausTexture_{0}_{1}_{2}.asset", mu, sigma, kernelSize);
+            var tex3d = AssetDatabase.LoadAssetAtPath< Texture3D>(textureCacheName);
+            if (tex3d == null)
+            {
+                LogPipeline();
+                #if UNITY_EDITOR
+                    AssetDatabase.CreateAsset(volumeGaus, textureCacheName);
+                #endif
+            } else
+            {
+                Graphics.CopyTexture(tex3d, volumeGaus);
+                IsLoG(isLog);
+            }
+
 
             /*stopWatch.Stop();
             print(stopWatch.Elapsed);*/
